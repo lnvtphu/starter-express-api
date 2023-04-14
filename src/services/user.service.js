@@ -1,4 +1,4 @@
-const mongoose = require('../../common/services/mongoose.service').mongoose;
+const mongoose = require('../config/mongoose').mongoose;
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -19,14 +19,14 @@ userSchema.set('toJSON', {
 });
 
 userSchema.findById = function (cb) {
-    return this.model('Users').find({id: this.id}, cb);
+    return this.model('Users').find({ id: this.id }, cb);
 };
 
 const User = mongoose.model('Users', userSchema);
 
 
 exports.findByEmail = (email) => {
-    return User.find({email: email});
+    return User.find({ email: email });
 };
 exports.findById = (id) => {
     return User.findById(id)
@@ -66,7 +66,7 @@ exports.patchUser = (id, userData) => {
 
 exports.removeById = (userId) => {
     return new Promise((resolve, reject) => {
-        User.deleteMany({_id: userId}, (err) => {
+        User.deleteMany({ _id: userId }, (err) => {
             if (err) {
                 reject(err);
             } else {

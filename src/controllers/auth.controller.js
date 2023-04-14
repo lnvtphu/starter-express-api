@@ -1,4 +1,4 @@
-const jwtSecret = require('../../common/config/env.config.js').jwt_secret,
+const jwtSecret = require('../config/env.config.js').jwt_secret,
     jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const uuid = require('uuid');
@@ -12,9 +12,9 @@ exports.login = (req, res) => {
         let token = jwt.sign(req.body, jwtSecret);
         let b = Buffer.from(hash);
         let refresh_token = b.toString('base64');
-        res.status(201).send({accessToken: token, refreshToken: refresh_token});
+        res.status(201).send({ accessToken: token, refreshToken: refresh_token });
     } catch (err) {
-        res.status(500).send({errors: err});
+        res.status(500).send({ errors: err });
     }
 };
 
@@ -22,8 +22,8 @@ exports.refresh_token = (req, res) => {
     try {
         req.body = req.jwt;
         let token = jwt.sign(req.body, jwtSecret);
-        res.status(201).send({id: token});
+        res.status(201).send({ id: token });
     } catch (err) {
-        res.status(500).send({errors: err});
+        res.status(500).send({ errors: err });
     }
 };

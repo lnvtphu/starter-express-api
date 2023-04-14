@@ -1,10 +1,11 @@
-const config = require('./common/config/env.config.js');
+const config = require('./config/env.config.js');
 
 const express = require('express');
 const app = express();
 
-const AuthorizationRouter = require('./authorization/routes.config');
-const UsersRouter = require('./users/routes.config');
+const AuthorizationRouter = require('./routes/auth.route');
+const UsersRouter = require('./routes/user.route');
+const StudentsRouter = require('./routes/student.route');
 
 app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
@@ -22,6 +23,7 @@ app.use(function (req, res, next) {
 app.use(express.json());
 AuthorizationRouter.routesConfig(app);
 UsersRouter.routesConfig(app);
+StudentsRouter.routesConfig(app);
 
 
 app.listen(config.port, function () {

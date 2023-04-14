@@ -1,12 +1,15 @@
-const jwt = require('jsonwebtoken'),
-    secret = require('../config/env.config.js').jwt_secret,
-    crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const Joi = require('joi');
+const httpStatus = require('http-status');
+const secret = require('../config/env.config.js').jwt_secret;
+const pick = require('../utils/pick');
 
 exports.verifyRefreshBodyField = (req, res, next) => {
     if (req.body && req.body.refresh_token) {
         return next();
     } else {
-        return res.status(400).send({error: 'need to pass refresh_token field'});
+        return res.status(400).send({ error: 'need to pass refresh_token field' });
     }
 };
 
@@ -18,7 +21,7 @@ exports.validRefreshNeeded = (req, res, next) => {
         req.body = req.jwt;
         return next();
     } else {
-        return res.status(400).send({error: 'Invalid refresh token'});
+        return res.status(400).send({ error: 'Invalid refresh token' });
     }
 };
 
@@ -30,8 +33,10 @@ exports.validJWTNeeded = (req, res, next) => {
             if (authorization[0] !== 'Bearer') {
                 return res.status(401).send();
             } else {
+
                 req.jwt = jwt.verify(authorization[1], secret);
                 return next();
+
             }
 
         } catch (err) {
@@ -40,4 +45,19 @@ exports.validJWTNeeded = (req, res, next) => {
     } else {
         return res.status(401).send();
     }
+};
+
+exports.validFields = (schema) => (req, res, next) => {
+    const validSchema = pick(schema, ['params', 'query', 'body']);
+    const object = pick(req, Object.keys(validSchema));
+    const { value, error } = Joi.compile(validSchema)
+        .prefs({ errors: { label: 'key' }, abortEarly: false })
+        .validate(object);
+
+    if (error) {
+        const errorMessage = error.details.map((details) => details.message).join(', ');
+        return res.status(httpStatus.BAD_REQUEST).send({ errors: errorMessage });
+    }
+    Object.assign(req, value);
+    return next();
 };
