@@ -1,4 +1,6 @@
 const mongoose = require('../config/mongoose').mongoose;
+const { toJSON, paginate } = require('./plugins');
+
 const Schema = mongoose.Schema;
 
 const parentsSchema = new Schema({
@@ -11,9 +13,7 @@ const parentsSchema = new Schema({
     job: String,
 });
 
-const studentsSchema = new Schema({
-    createdDate: String,
-    updatedDate: String,
+const studentSchema = new Schema({
     studentsNumber: String,
     fullName: String,
     gender: { type: String, enum: ["Male", "Female", "Other"] },
@@ -35,19 +35,30 @@ const studentsSchema = new Schema({
     status: String,
 });
 
-studentsSchema.virtual('id').get(function () {
+// add plugin that converts mongoose to json
+studentSchema.plugin(toJSON);
+studentSchema.plugin(paginate);
+
+studentSchema.virtual('id').get(function () {
     return this._id.toHexString();
 });
 
 // Ensure virtual fields are serialised.
-studentsSchema.set('toJSON', {
+studentSchema.set('toJSON', {
     virtuals: true
 });
 
-studentsSchema.findById = function (cb) {
-    return this.model('Students').find({ id: this.id }, cb);
-};
+/**
+ * Check if citizenId is taken
+ * @param {string} citizenId - The user's citizen id
+ * @param {ObjectId} [excludeUserId] - The id of the student to be excluded
+ * @returns {Promise<boolean>}
+ */
+studentSchema.statics.isCitizenIdTaken = async function (citizenId, paperNumber) {
+    const user = await this.findOne({ citizenId, _id: { $ne: paperNumber } });
+    return !!user;
+  };
 
-const Student = mongoose.model('Student', studentsSchema);
+const Student = mongoose.model('Student', studentSchema);
 
 module.exports = Student;

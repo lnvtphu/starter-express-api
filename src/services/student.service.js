@@ -1,5 +1,17 @@
-const Student = require('../models/student.model');
+const httpStatus = require('http-status');
+const { Student } = require('../models');
 
+/**
+ * Create a student
+ * @param {Object} studentBody
+ * @returns {Promise<Student>}
+ */
+const createStudent = async (studentBody) => {
+    if (await Student.isEmailTaken(studentBody.email)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    }
+    return Student.create(studentBody);
+};
 
 /**
  * Get student by id
