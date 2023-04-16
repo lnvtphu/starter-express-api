@@ -1,49 +1,41 @@
-const StudentService = require('../services/student.service');
+const httpStatus = require('http-status');
+const catchAsync = require('../utils/catchAsync');
+const { studentService } = require('../services');
 
-exports.insert = (req, res) => {
-    // let salt = crypto.randomBytes(16).toString('base64');
-    // let hash = crypto.createHmac('sha512', salt).update(req.body.password).digest("base64");
-    // req.body.password = salt + "$" + hash;
-    // req.body.permissionLevel = 1;
-    StudentService.createStudent(req.body)
-        .then((result) => {
-            res.status(201).send({id: result._id});
-        });
-};
+const createStudent = catchAsync(async (req, res) => {
+    const student = await studentService.createStudent(req.body);
+    res.status(httpStatus.CREATED).send(student);
+});
 
-exports.list = (req, res) => {
-    let limit = req.query.limit && req.query.limit <= 100 ? parseInt(req.query.limit) : 10;
-    let page = 0;
-    if (req.query) {
-        if (req.query.page) {
-            req.query.page = parseInt(req.query.page);
-            page = Number.isInteger(req.query.page) ? req.query.page : 0;
-        }
-    }            res.status(201).send({id: result._id});
+const getStudents = catchAsync(async (req, res) => {
+    const filter = pick(req.query, ['name', 'role']);
+    const options = pick(req.query, ['sortBy', 'limit', 'page']);
+    const result = await studentService.queryStudents(filter, options);
+    res.send(result);
+});
 
-    StudentService.list(limit, page)
-        .then((result) => {
-            res.status(200).send(result);
-        });
-};
+const getStudent = catchAsync(async (req, res) => {
+    const student = await studentService.getStudentById(req.params.studentId);
+    if (!student) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
+    }
+    res.send(student);
+});
 
-exports.getById = (req, res) => {
-    StudentService.findById(req.params.studentId)
-        .then((result) => {
-            res.status(200).send(result);
-        });
-};
-exports.patchById = (req, res) => {
-    StudentService.patchStudent(req.params.studentId, req.body)
-        .then((result) => {
-            res.status(204).send({});
-        });
+const updateStudent = catchAsync(async (req, res) => {
+    const student = await studentService.updateStudentById(req.params.studentId, req.body);
+    res.send(student);
+});
 
-};
+const deleteStudent = catchAsync(async (req, res) => {
+    await studentService.deleteStudentById(req.params.studentId);
+    res.status(httpStatus.NO_CONTENT).send();
+});
 
-exports.removeById = (req, res) => {
-    StudentService.removeById(req.params.studentId)
-        .then((result) => {
-            res.status(204).send({});
-        });
-};
+module.exports = {
+    createStudent,
+    getStudents,
+    getStudent,
+    updateStudent,
+    deleteStudent,
+}

@@ -1,3 +1,4 @@
+const express = require('express');
 const StudentsController = require('../controllers/student.controller');
 const PermissionMiddleware = require('../middlewares/auth.permission.middleware');
 const ValidationMiddleware = require('../middlewares/auth.validation.middleware');
@@ -8,33 +9,35 @@ const ADMIN = config.permissionLevels.ADMIN;
 const NORMAL = config.permissionLevels.NORMAL;
 const VIEWER = config.permissionLevels.VIEWER;
 
-exports.routesConfig = function (app) {
-    app.post('/students', [
+const router = express.Router();
+
+router
+    .route('/')
+    .post(
         ValidationMiddleware.validJWTNeeded,
         PermissionMiddleware.minimumPermissionLevelRequired(NORMAL),
         ValidationMiddleware.validFields(StudentsValidation.createStudent),
-        StudentsController.insert
-    ]);
-    app.get('/students', [
+        StudentsController.createStudent)
+    .get(
         ValidationMiddleware.validJWTNeeded,
         PermissionMiddleware.minimumPermissionLevelRequired(NORMAL),
-        StudentsController.list
-    ]);
-    app.get('/students/:studentId', [
+        StudentsController.getStudents);
+
+router
+    .route('/:studentId')
+    .get(
         ValidationMiddleware.validJWTNeeded,
-        PermissionMiddleware.minimumPermissionLevelRequired(VIEWER),
+        PermissionMiddleware.minimumPermissionLevelRequired(NORMAL),
         PermissionMiddleware.onlySameUserOrAdminCanDoThisAction,
-        StudentsController.getById
-    ]);
-    app.patch('/students/:studentId', [
+        StudentsController.getStudent)
+    .patch(
         ValidationMiddleware.validJWTNeeded,
-        PermissionMiddleware.minimumPermissionLevelRequired(VIEWER),
+        PermissionMiddleware.minimumPermissionLevelRequired(NORMAL),
         PermissionMiddleware.onlySameUserOrAdminCanDoThisAction,
-        StudentsController.patchById
-    ]);
-    app.delete('/students/:studentId', [
+        StudentsController.updateStudent)
+    .delete(
         ValidationMiddleware.validJWTNeeded,
-        PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
-        StudentsController.removeById
-    ]);
-};
+        PermissionMiddleware.minimumPermissionLevelRequired(NORMAL),
+        StudentsController.deleteStudent);
+
+module.exports = router;

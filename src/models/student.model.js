@@ -51,13 +51,12 @@ studentSchema.set('toJSON', {
 /**
  * Check if citizenId is taken
  * @param {string} citizenId - The user's citizen id
- * @param {ObjectId} [excludeUserId] - The id of the student to be excluded
  * @returns {Promise<boolean>}
  */
-studentSchema.statics.isCitizenIdTaken = async function (citizenId, paperNumber) {
-    const user = await this.findOne({ citizenId, _id: { $ne: paperNumber } });
+studentSchema.statics.isCitizenIdTaken = async function (citizenId) {
+    const user = await this.findOne({ citizenId });
     return !!user;
-  };
+};
 
 const Student = mongoose.model('Student', studentSchema);
 

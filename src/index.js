@@ -1,29 +1,37 @@
-const config = require('./config/env.config.js');
 
 const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const httpStatus = require('http-status');
+const config = require('./config/env.config.js');
+const routes = require('./routes');
+const { errorConverter, errorHandler } = require('./middlewares/error');
+const ApiError = require('./utils/ApiError');
+
 const app = express();
 
-const AuthorizationRouter = require('./routes/auth.route');
-const UsersRouter = require('./routes/user.route');
-const StudentsRouter = require('./routes/student.route');
+// set security HTTP headers
+app.use(helmet());
 
-app.use(function (req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
-    res.header('Access-Control-Expose-Headers', 'Content-Length');
-    res.header('Access-Control-Allow-Headers', 'Accept, Authorization, Content-Type, X-Requested-With, Range');
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    } else {
-        return next();
-    }
+// enable cors
+app.use(cors());
+app.options('*', cors());
+
+// parse json request body
+app.use(express.json());
+// v1 api routes
+app.use(routes);
+
+// send back a 404 error for any unknown api request
+app.use((req, res, next) => {
+    next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
 });
 
-app.use(express.json());
-AuthorizationRouter.routesConfig(app);
-UsersRouter.routesConfig(app);
-StudentsRouter.routesConfig(app);
+// convert error to ApiError, if needed
+app.use(errorConverter);
+
+// handle error
+app.use(errorHandler);
 
 
 app.listen(config.port, function () {

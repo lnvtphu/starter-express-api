@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const { Student } = require('../models');
+const ApiError = require('../utils/ApiError');
 
 /**
  * Create a student
@@ -7,14 +8,28 @@ const { Student } = require('../models');
  * @returns {Promise<Student>}
  */
 const createStudent = async (studentBody) => {
-    if (await Student.isEmailTaken(studentBody.email)) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    if (await Student.isCitizenIdTaken(studentBody.citizenId)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Citizen ID already taken');
     }
     return Student.create(studentBody);
 };
 
 /**
- * Get student by id
+ * Query for student
+ * @param {Object} filter - Mongo filter
+ * @param {Object} options - Query options
+ * @param {string} [options.sortBy] - Sort option in the format: sortField:(desc|asc)
+ * @param {number} [options.limit] - Maximum number of results per page (default = 10)
+ * @param {number} [options.page] - Current page (default = 1)
+ * @returns {Promise<QueryResult>}
+ */
+const queryStudents = async (filter, options) => {
+    const users = await Student.paginate(filter, options);
+    return users;
+};
+
+/**
+ * Get user by id
  * @param {ObjectId} id
  * @returns {Promise<Student>}
  */
@@ -22,55 +37,53 @@ const getStudentById = async (id) => {
     return Student.findById(id);
 };
 
-exports.createStudent = async (studentData) => {
-    const { citizenId = '' } = studentData;
-    const existingStudent = await Student.findOne({ citizenId });
-    if (existingStudent) {
-        return {}
-    } else {
-        const student = new Student(studentData);
-        return student.save();
+/**
+ * Get user by citizenId
+ * @param {string} citizenId
+ * @returns {Promise<Student>}
+ */
+const getStudentByEmail = async (citizenId) => {
+    return Student.findOne({ citizenId });
+};
+
+/**
+ * Update user by id
+ * @param {ObjectId} userId
+ * @param {Object} updateBody
+ * @returns {Promise<Student>}
+ */
+const updateStudentById = async (userId, updateBody) => {
+    const user = await getStudentById(userId);
+    if (!user) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
     }
-    // return Student.findOneAndUpdate(
-    //     { citizenId },                 // find a document with that filter
-    //     { $setOnInsert: studentData }, // document to insert when nothing was found
-    //     { upsert: true, new: true, runValidators: true }
-    // )
-
-    // const student = new Student(studentData);
-    // return student.save();
+    if (updateBody.email && (await Student.isEmailTaken(updateBody.email, userId))) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Citizend ID already taken');
+    }
+    Object.assign(user, updateBody);
+    await user.save();
+    return user;
 };
 
-exports.list = (perPage, page) => {
-    return new Promise((resolve, reject) => {
-        Student.find()
-            .limit(perPage)
-            .skip(perPage * page)
-            .exec(function (err, students) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(students);
-                }
-            })
-    });
+/**
+ * Delete user by id
+ * @param {ObjectId} userId
+ * @returns {Promise<Student>}
+ */
+const deleteStudentById = async (userId) => {
+    const user = await getStudentById(userId);
+    if (!user) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
+    }
+    await user.remove();
+    return user;
 };
 
-exports.patchStudent = (id, studentData) => {
-    return Student.findOneAndUpdate({
-        _id: id
-    }, studentData);
-};
-
-exports.removeById = (studentId) => {
-    return new Promise((resolve, reject) => {
-        Student.deleteMany({ _id: studentId }, (err) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(err);
-            }
-        });
-    });
-};
-
+module.exports = {
+    createStudent,
+    queryStudents,
+    getStudentById,
+    getStudentByEmail,
+    updateStudentById,
+    deleteStudentById,
+}

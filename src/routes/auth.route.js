@@ -1,18 +1,23 @@
+const express = require('express');
 const VerifyUserMiddleware = require('../middlewares/verify.user.middleware');
 const AuthorizationController = require('../controllers/auth.controller');
 const AuthValidationMiddleware = require('../middlewares/auth.validation.middleware');
-exports.routesConfig = function (app) {
 
-    app.post('/auth', [
+const router = express.Router();
+
+router
+    .route('/')
+    .post(
         VerifyUserMiddleware.hasAuthValidFields,
         VerifyUserMiddleware.isPasswordAndUserMatch,
-        AuthorizationController.login
-    ]);
+        AuthorizationController.login)
 
-    app.post('/auth/refresh', [
+router
+    .route('/refresh')
+    .post(
         AuthValidationMiddleware.validJWTNeeded,
         AuthValidationMiddleware.verifyRefreshBodyField,
         AuthValidationMiddleware.validRefreshNeeded,
-        AuthorizationController.login
-    ]);
-};
+        AuthorizationController.login);
+
+module.exports = router;
