@@ -1,4 +1,4 @@
-const UserModel = require('../models/users.model');
+const UserService = require('../services/user.service');
 const crypto = require('crypto');
 
 exports.insert = (req, res) => {
@@ -6,9 +6,9 @@ exports.insert = (req, res) => {
     let hash = crypto.createHmac('sha512', salt).update(req.body.password).digest("base64");
     req.body.password = salt + "$" + hash;
     req.body.permissionLevel = 1;
-    UserModel.createUser(req.body)
+    UserService.createUser(req.body)
         .then((result) => {
-            res.status(201).send({id: result._id});
+            res.status(201).send({ id: result._id });
         });
 };
 
@@ -21,14 +21,14 @@ exports.list = (req, res) => {
             page = Number.isInteger(req.query.page) ? req.query.page : 0;
         }
     }
-    UserModel.list(limit, page)
+    UserService.list(limit, page)
         .then((result) => {
             res.status(200).send(result);
         })
 };
 
 exports.getById = (req, res) => {
-    UserModel.findById(req.params.userId)
+    UserService.findById(req.params.userId)
         .then((result) => {
             res.status(200).send(result);
         });
@@ -40,7 +40,7 @@ exports.patchById = (req, res) => {
         req.body.password = salt + "$" + hash;
     }
 
-    UserModel.patchUser(req.params.userId, req.body)
+    UserService.patchUser(req.params.userId, req.body)
         .then((result) => {
             res.status(204).send({});
         });
@@ -48,8 +48,8 @@ exports.patchById = (req, res) => {
 };
 
 exports.removeById = (req, res) => {
-    UserModel.removeById(req.params.userId)
-        .then((result)=>{
+    UserService.removeById(req.params.userId)
+        .then((result) => {
             res.status(204).send({});
         });
 };
