@@ -24,12 +24,12 @@ const createStudent = async (studentBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryStudents = async (filter, options) => {
-    const users = await Student.paginate(filter, options);
-    return users;
+    const students = await Student.paginate(filter, options);
+    return students;
 };
 
 /**
- * Get user by id
+ * Get student by id
  * @param {ObjectId} id
  * @returns {Promise<Student>}
  */
@@ -38,52 +38,52 @@ const getStudentById = async (id) => {
 };
 
 /**
- * Get user by citizenId
+ * Get student by citizenId
  * @param {string} citizenId
  * @returns {Promise<Student>}
  */
-const getStudentByEmail = async (citizenId) => {
+const getStudentByCitizenId = async (citizenId) => {
     return Student.findOne({ citizenId });
 };
 
 /**
- * Update user by id
- * @param {ObjectId} userId
+ * Update student by id
+ * @param {ObjectId} studentId
  * @param {Object} updateBody
  * @returns {Promise<Student>}
  */
-const updateStudentById = async (userId, updateBody) => {
-    const user = await getStudentById(userId);
-    if (!user) {
+const updateStudentById = async (studentId, updateBody) => {
+    const student = await getStudentById(studentId);
+    if (!student) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
     }
-    if (updateBody.email && (await Student.isEmailTaken(updateBody.email, userId))) {
+    if (updateBody.email && (await Student.isEmailTaken(updateBody.email, studentId))) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Citizend ID already taken');
     }
-    Object.assign(user, updateBody);
-    await user.save();
-    return user;
+    Object.assign(student, updateBody);
+    await student.save();
+    return student;
 };
 
 /**
- * Delete user by id
- * @param {ObjectId} userId
+ * Delete student by id
+ * @param {ObjectId} studentId
  * @returns {Promise<Student>}
  */
-const deleteStudentById = async (userId) => {
-    const user = await getStudentById(userId);
-    if (!user) {
+const deleteStudentById = async (studentId) => {
+    const student = await getStudentById(studentId);
+    if (!student) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
     }
-    await user.remove();
-    return user;
+    await student.deleteOne();
+    return student;
 };
 
 module.exports = {
     createStudent,
     queryStudents,
     getStudentById,
-    getStudentByEmail,
+    getStudentByCitizenId,
     updateStudentById,
     deleteStudentById,
 }

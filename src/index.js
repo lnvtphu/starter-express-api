@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
 const httpStatus = require('http-status');
 const config = require('./config/env.config.js');
 const routes = require('./routes');
@@ -12,6 +13,9 @@ const app = express();
 
 // set security HTTP headers
 app.use(helmet());
+
+// sanitize request data
+app.use(mongoSanitize());
 
 // enable cors
 app.use(cors());

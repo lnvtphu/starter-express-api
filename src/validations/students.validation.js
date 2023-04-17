@@ -9,9 +9,9 @@ const createStudent = {
         dob: Joi.string().required(),
         birthplace: Joi.string().required(),
         highSchool: Joi.string().required(),
-        briefcase: [String],
+        briefcase: Joi.array().items(Joi.string()),
         citizenId: Joi.string().required(),
-        phone: Joi.string().custom(phoneNumber),
+        phone: Joi.string().required().custom(phoneNumber),
         address: Joi.string().required()
     }),
 };
@@ -42,7 +42,7 @@ const updateStudent = {
         dob: Joi.string().required(),
         birthplace: Joi.string().required(),
         highSchool: Joi.string().required(),
-        briefcase: [String],
+        briefcase: Joi.array().items(Joi.string()),
         citizenId: Joi.string().required(),
         phone: Joi.string().custom(phoneNumber),
         address: Joi.string().required()
