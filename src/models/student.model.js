@@ -33,6 +33,9 @@ const studentSchema = new Schema({
     ward: String,
     parents: [parentsSchema],
     status: String,
+},
+{
+  timestamps: true
 });
 
 // add plugin that converts mongoose to json
@@ -50,12 +53,13 @@ studentSchema.set('toJSON', {
 
 /**
  * Check if citizenId is taken
- * @param {string} citizenId - The user's citizen id
+ * @param {string} citizenId - The student's citizen id
+ * @param {ObjectId} [excludeStudentId] - The id of the student to be excluded
  * @returns {Promise<boolean>}
  */
-studentSchema.statics.isCitizenIdTaken = async function (citizenId) {
-    const user = await this.findOne({ citizenId });
-    return !!user;
+studentSchema.statics.isCitizenIdTaken = async function (citizenId, excludeStudentId) {
+    const student = await this.findOne({ citizenId, _id: { $ne: excludeStudentId } });
+    return !!student;
 };
 
 const Student = mongoose.model('Student', studentSchema);

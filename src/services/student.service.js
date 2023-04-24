@@ -57,7 +57,7 @@ const updateStudentById = async (studentId, updateBody) => {
     if (!student) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
     }
-    if (updateBody.email && (await Student.isEmailTaken(updateBody.email, studentId))) {
+    if (updateBody.citizenId && (await Student.isCitizenIdTaken(updateBody.citizenId, studentId))) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Citizend ID already taken');
     }
     Object.assign(student, updateBody);
