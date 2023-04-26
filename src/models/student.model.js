@@ -34,9 +34,9 @@ const studentSchema = new Schema({
     parents: [parentsSchema],
     status: String,
 },
-{
-  timestamps: true
-});
+    {
+        timestamps: true
+    });
 
 // add plugin that converts mongoose to json
 studentSchema.plugin(toJSON);
@@ -46,11 +46,18 @@ studentSchema.virtual('id').get(function () {
     return this._id.toHexString();
 });
 
+parentsSchema.virtual('id').get(function () {
+    return this._id.toHexString();
+});
+
 // Ensure virtual fields are serialised.
 studentSchema.set('toJSON', {
     virtuals: true
 });
-
+// Ensure virtual fields are serialised.
+parentsSchema.set('toJSON', {
+    virtuals: true
+});
 /**
  * Check if citizenId is taken
  * @param {string} citizenId - The student's citizen id
