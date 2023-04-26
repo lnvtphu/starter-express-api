@@ -1,6 +1,8 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { studentService } = require('../services');
+const pick = require('../utils/pick');
+const ApiError = require('../utils/ApiError');
 
 const createStudent = catchAsync(async (req, res) => {
     const student = await studentService.createStudent(req.body);
