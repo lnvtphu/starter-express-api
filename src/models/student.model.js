@@ -8,7 +8,7 @@ const parentsSchema = new Schema({
     updatedDate: String,
     fullName: String,
     phone: String,
-    dob: String,
+    dob: Number,
     relationship: String,
     job: String,
 });

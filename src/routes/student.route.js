@@ -16,7 +16,7 @@ router
     .post(
         ValidationMiddleware.validJWTNeeded,
         PermissionMiddleware.minimumPermissionLevelRequired(NORMAL),
-        ValidationMiddleware.validFields(StudentsValidation.createStudent),
+        // ValidationMiddleware.validFields(StudentsValidation.createStudent),
         StudentsController.createStudent)
     .get(
         ValidationMiddleware.validJWTNeeded,
